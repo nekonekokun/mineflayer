@@ -1,0 +1,108 @@
+{
+  "_args": [
+    [
+      "mineflayer",
+      "/home/user"
+    ]
+  ],
+  "_from": "mineflayer@latest",
+  "_id": "mineflayer@2.5.0",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/mineflayer",
+  "_nodeVersion": "8.1.2",
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/mineflayer-2.5.0.tgz_1498501804507_0.9445982524193823"
+  },
+  "_npmUser": {
+    "email": "romain.rom1@gmail.com",
+    "name": "rom1504"
+  },
+  "_npmVersion": "5.0.3",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "mineflayer",
+    "raw": "mineflayer",
+    "rawSpec": "",
+    "scope": null,
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/mineflayer/-/mineflayer-2.5.0.tgz",
+  "_shasum": "b22015e1558e384359f60554d00e002bbb94f945",
+  "_shrinkwrap": null,
+  "_spec": "mineflayer",
+  "_where": "/home/user",
+  "bugs": {
+    "url": "https://github.com/PrismarineJS/mineflayer/issues"
+  },
+  "dependencies": {
+    "minecraft-data": "^2.19.0",
+    "minecraft-protocol": "^1.3.1",
+    "mojangson": "^0.2.1",
+    "prismarine-biome": "^1.0.1",
+    "prismarine-block": "^1.0.1",
+    "prismarine-chunk": "^1.7.0",
+    "prismarine-entity": "^0.2.0",
+    "prismarine-item": "^1.0.1",
+    "prismarine-recipe": "^1.0.1",
+    "prismarine-windows": "^1.1.0",
+    "protodef": "^1.4.0",
+    "vec3": "^0.1.3"
+  },
+  "description": "create minecraft bots with a stable, high level API",
+  "devDependencies": {
+    "doctoc": "^1.0.0",
+    "minecraft-wrap": "^1.0.2",
+    "mocha": "^3.0.2",
+    "prismarine-chunk": "^1.0.0",
+    "require-self": "^0.2.1"
+  },
+  "directories": {},
+  "dist": {
+    "integrity": "sha512-uPmDVvwcoSfq/Z4NUHCinPNxbqeXytYnvG92Sg6c4jCoyuiGo4SW/5+Pi3UiEXXYCtptV20SHUs3YcewhCSRAw==",
+    "shasum": "b22015e1558e384359f60554d00e002bbb94f945",
+    "tarball": "https://registry.npmjs.org/mineflayer/-/mineflayer-2.5.0.tgz"
+  },
+  "engines": {
+    "node": ">=4"
+  },
+  "gitHead": "b82651b8c77a3b0ec1ad87d6469a8a625fa56a8f",
+  "homepage": "https://github.com/PrismarineJS/mineflayer#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "superjoe",
+      "email": "superjoe30@gmail.com"
+    },
+    {
+      "name": "zuazo",
+      "email": "xabier@onddo.com"
+    },
+    {
+      "name": "roblabla",
+      "email": "robinlambertz.dev@gmail.com"
+    },
+    {
+      "name": "rom1504",
+      "email": "romain.rom1@gmail.com"
+    }
+  ],
+  "name": "mineflayer",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PrismarineJS/mineflayer.git"
+  },
+  "scripts": {
+    "prepublish": "require-self",
+    "test": "mocha --reporter spec"
+  },
+  "version": "2.5.0"
+}
