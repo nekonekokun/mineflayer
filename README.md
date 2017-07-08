@@ -1,4 +1,4 @@
-#RC player sample
+# RC player sample
 usage:
 cd ./examples
 node move_test.js [server's address] [port] [username] [password]
