@@ -6,6 +6,7 @@
 var mineflayer = require('../../mineflayer');
 var fs = require("fs");
 var request = require('request');
+var Vec3 = require('vec3').Vec3;
 var json_messages = {"data": []};
 var date = new Date();
 var format = 'YYYYMMDDhhmmss';
@@ -16,9 +17,15 @@ format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
 format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
 format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2));
 var safe_chat_counter = 0;
-var last_login_user = "noone"
+var last_login_user = "noone";
+var player_of_interest = "noone";
+var dst_player_of_interest = 9999;
 var omikuji_done_today = date.getDate();
 var command_timer = 0;
+var interact_timer = 0;
+var last_interact_time = new Date();
+var chasing_user = "noone";
+var users = {};
 
 if(process.argv.length < 4 || process.argv.length > 6) {
   console.log("Usage : node echo.js <host> <port> [<name>] [<password>]");
@@ -77,6 +84,104 @@ bot.on('message', function(jmes) {
   //console.log("\n");
 });
 
+bot.on('entitySwingArm', function(entity) {
+  if(entity.type === "player"){
+    console.log("entity swinged arm");
+    //debug_log(entity);
+    dst = (bot.entity.position.distanceTo(entity.position));
+    if(dst < 4){
+      //calcurate the attack hit or not
+      var mypos = new Vec3(bot.entity.position.x,
+        bot.entity.position.y,
+        bot.entity.position.z
+      );
+      var yourpos = new Vec3(entity.position.x,
+        entity.position.y,
+        entity.position.z
+      );
+      var lookat = pyr2vec(entity.pitch, entity.yaw, dst);
+      var d = mypos.distanceTo(lookat.add(yourpos));
+      if (d < 0.4){
+        console.log("hit");
+        if(chasing_user === entity.username){
+          chasing_user = "noone";
+          bot.clearControlStates();
+        }
+        else{
+          chasing_user = entity.username;
+          setTimeout(once_three_seconds, 200, []);
+          bot.clearControlStates();
+        }
+      }
+    }
+  }
+});
+
+//look at neaby player
+bot.on('entityMoved', function(entity) {
+  if(entity.type === "player"){
+    users[entity.username] = entity;
+    //console.log("entity moved");
+    //console.log(entity);
+    dst = (bot.entity.position.distanceTo(entity.position));
+    //console.log("d = " + dst);
+    if(player_of_interest === entity.username && dst > 2){
+      player_of_interst = "noone";
+      dst_player_of_interest = 999;
+    }
+
+    if(dst < 2){
+      var do_interact = false;
+      if(player_of_interest === entity.username){
+        dst_player_of_interest = dst;
+        do_interact = true;
+      }
+      else if(dst < dst_player_of_interest){
+        player_of_interest = entity.username;
+        dst_player_of_interest = dst;
+        do_interact = true;
+      }
+
+      //if(false){
+      if(chasing_user ==="noone" && do_interact == true){
+        //avoid too frequent motion
+        var now = new Date();
+        var dt = now - last_interact_time;
+        //console.log("dt = " + dt);
+        if(dt > 200){
+          var mypos = new Vec3(bot.entity.position.x,
+            bot.entity.position.y,
+            bot.entity.position.z
+          );
+          dp = (mypos.subtract(entity.position));
+          pyr = vec2pitch_yaw_radus(dp);
+          if (Math.abs(pyr.yaw - bot.entity.yaw) > 0.05 ||
+            Math.abs(pyr.pitch - bot.entity.pitch) > 0.05){
+            //console.log("dyaw = " + Math.abs(pyr.yaw - bot.entity.yaw));
+            bot.look(pyr.yaw, pyr.pitch, false, false);
+            //bot.look(pyr.yaw, 0, false, false);
+          }
+          //bot.lookAt(entity.position, false, false);
+          //mimic sneaking
+          if (entity.metadata["0"] === 2){
+            bot.setControlState("sneak", true);
+            if(command_timer){
+              clearTimeout(command_timer);
+            }
+            command_timer = setTimeout(function(){
+               bot.clearControlStates();
+            }, 500);
+          }
+          else{
+            //bot.setControlState("sneak", false);
+          }
+          last_interact_time = now;
+        }
+      }
+    }
+  }
+});
+
 bot.on('chat', function(username, message, translate, jsonMsg, matches) {
   //if(username === bot.username) return;
   //bot.chat(message);
@@ -91,12 +196,93 @@ bot.on('whisper', function(username, message, translate, jsonMsg, matches) {
 });
 
 setTimeout(writeJson, 30, json_messages);
-setTimeout(once_one_minute, 1000 * 10, []);
+setTimeout(once_one_minute, 1000 * 2, []);
+//setTimeout(once_three_seconds, 1000 * 2, []);
 
 //bot.setControlState("sneak", true)
 
 //--------- function definition ---------------------------------------------------
+function once_three_seconds(){
+  var entity = null;
+  //console.log("chasing_user = " + chasing_user);
+  //console.log(users);
+  if( entity = users[chasing_user]){
+    //console.log("chasing_user found");
+    var mypos = new Vec3(bot.entity.position.x,
+      bot.entity.position.y,
+      bot.entity.position.z
+    );
+    var dp = (mypos.subtract(entity.position));
+    var pyr = vec2pitch_yaw_radus(dp);
+    if (Math.abs(pyr.yaw - bot.entity.yaw) > 0.05 ||
+      Math.abs(pyr.pitch - bot.entity.pitch) > 0.05){
+        //console.log("dyaw = " + Math.abs(pyr.yaw - bot.entity.yaw));
+      //console.log("yaw = " + pyr.yaw);
+      //console.log("pitch = " + pyr.pitch);
+      //bot.look(pyr.yaw, pyr.pitch, false, false);
+      bot.look(pyr.yaw, 0, false, false);
+    }
+
+    var dst = (bot.entity.position.distanceTo(entity.position));
+    if(dst >= 1.5){
+      bot.setControlState("swing", false);
+      bot.setControlState("forward", true);
+      bot.setControlState("back", false);
+
+      //jump
+      var mypos = new Vec3(bot.entity.position.x,
+        bot.entity.position.y,
+        bot.entity.position.z
+      );
+      var block_at = bot.blockAt(mypos);
+      var look_point = mypos.add(
+        pyr2vec(bot.entity.pitch, bot.entity.yaw, 0.8)
+      );
+      //console.log("look = " + pyr2vec(bot.entity.pitch, bot.entity.yaw, 0.8));
+      var block_front = bot.blockAt(look_point.add(new Vec3 (0, 0, 0)));
+      var block_front_up = bot.blockAt(look_point.add(new Vec3 (0, 1, 0)));
+      //console.log(block);
+      if(block_front.boundingBox === "block" &&
+        block_front_up.boundingBox === "empty"){
+        bot.setControlState("jump", true);
+      }
+      else{
+        bot.setControlState("jump", false);
+      }
+      //ladder
+      if(block_at.type == 65  && pyr.yaw > 0){
+        bot.setControlState("jump", true);
+      }
+    }
+    else{
+      bot.clearControlStates();
+      bot.setControlState("swing", true);
+    }
+
+    //bot.lookAt(entity.position, false, false);
+    //mimic sneaking
+    if (entity.metadata["0"] === 2){
+      bot.setControlState("sneak", true);
+      if(command_timer){
+        clearTimeout(command_timer);
+      }
+      command_timer = setTimeout(function(){
+         bot.clearControlStates();
+      }, 500);
+    }
+    else{
+      //bot.setControlState("sneak", false);
+    }
+  }
+  if(chasing_user != "noone")
+    setTimeout(once_three_seconds, 100, []);
+}
+
 function once_one_minute(){
+  //reset player_of_interest
+  player_of_interst = "noone";
+  dst_player_of_interest = 999;
+  //try omikuji
   var newdate = new Date();
   if(omikuji_done_today != newdate.getDate())
   {
@@ -228,7 +414,8 @@ function recognizePatterns(txt, uname, type){
   else if(type === "whisper" ){
     if(m = txt.match(/^nezunezukun00 (.*)/)){
     console.log("command detected");
-    var command = m[1].replace(/^\s*(.*?)\s*$/, "$1");
+    var command = m[1].replace(/^\s*(.*?)\s*$/, "$1")
+      .replace(/^\s+|\s+$/g,'').replace(/ +/g,' ');
     tokens = command.split(" ");
     if(command_timer){
       clearTimeout(command_timer);
@@ -242,6 +429,7 @@ function recognizePatterns(txt, uname, type){
       case "stop":
       case "s":
         bot.clearControlStates();
+        chasing_user = "noone";
         break;
       case "forward":
       case "f":
@@ -261,6 +449,10 @@ function recognizePatterns(txt, uname, type){
       case "sn":
         bot.setControlState("sneak", true);
         break;
+      case "swing":
+      case "sw":
+        bot.setControlState("swing", true);
+        break;
       case "turn":
       case "t":
         var t1 = Number(tokens[1]);
@@ -270,6 +462,23 @@ function recognizePatterns(txt, uname, type){
         console.log("turn " + yaw + ", " + pitch);
         bot.look(yaw * 3.14 / 180, pitch * 3.14 / 180, false, false);
         break;
+      case "block":
+        var mypos = new Vec3(bot.entity.position.x,
+          bot.entity.position.y,
+          bot.entity.position.z
+        );
+        var look_point = mypos.add(
+          pyr2vec(bot.entity.pitch, bot.entity.yaw, 0.8)
+        );
+        console.log("look = " + pyr2vec(bot.entity.pitch, bot.entity.yaw, 0.8));
+        var block = bot.blockAt(look_point);
+        console.log(block);
+        break;
+        case "chase":
+          //var t1 = Number(tokens[1]);
+          chasing_user = tokens[1];
+          setTimeout(once_three_seconds, 200, []);
+          break;
     }
   }
   }
@@ -310,4 +519,34 @@ function imgsFromImgur(html){
   );
   console.log("imgs: " + imgs.toString());
   return imgs;
+}
+
+function pyr2vec(p, y, r){
+  return new Vec3(
+    -r * Math.cos(p) * Math.sin(y),
+    r * Math.sin(p),
+    -r * Math.cos(p) * Math.cos(y)
+  );
+}
+
+function vec2pitch_yaw_radus(v){
+  if(v.x != 0.0){
+    yaw = Math.atan2(v.x, v.z);
+  }
+  else{
+    yaw = v.z >= 0 ? Math.PI / 2: -Math.PI / 2;
+  }
+  const groundDistance = Math.sqrt(v.x * v.x + v.z * v.z)
+  pitch = Math.atan2(-v.y, groundDistance)
+  radius = v.distanceTo(new Vec3(0, 0, 0))
+  return {"pitch": pitch, "yaw": yaw, "radius": radius};
+}
+
+function interact(entity){
+
+}
+
+function debug_log(str){
+  if(false)
+    console.log(str);
 }
