@@ -1,0 +1,9 @@
+{
+  "name": "luckybeast-bot-telemetry",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "mineflayer": "2.6.1"
+  }
+}

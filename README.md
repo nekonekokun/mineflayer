@@ -1,8 +1,10 @@
-#RC player sample
-usage:
-cd ./examples
-node move_test.js [server's address] [port] [username] [password]
+# Mineflayerで色々するサンプル
+* usage:
+cd ./nezunezukun
+node bot_main.js [server's address] [port] [username] [password]
 
+* スペシャルサンクス
+LuckybeastBotTelemetryをつまさきさんからもらいました
 
 # Mineflayer
 

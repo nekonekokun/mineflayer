@@ -1,0 +1,19 @@
+ChatMessage {
+  json: { extra: [ [Object] ], text: '' },
+  text: 'username joined the game',
+  extra:
+   [ ChatMessage {
+       json: [Object],
+       text: 'username joined the game',
+       bold: undefined,
+       italic: undefined,
+       underlined: undefined,
+       strikethrough: undefined,
+       obfuscated: undefined,
+       color: 'yellow' } ],
+  bold: undefined,
+  italic: undefined,
+  underlined: undefined,
+  strikethrough: undefined,
+  obfuscated: undefined,
+  color: undefined }
